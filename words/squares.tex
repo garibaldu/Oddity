@@ -1,19 +1,33 @@
 % This document is part of the Oddity project.
-% Copyright 2014 the Authors.
+% Copyright 2015 the Authors.
 
 % ## to-do
 % - write
 
 \documentclass[12pt]{article}
 \newcommand{\given}{\,|\,}
+
+\title{generalising and extending our use of DirMult for source finding}
+\author{frean, hogg, brewer}
+\date{}
 \begin{document}\sloppy\sloppypar
+\maketitle
 
-\noindent
-\begin{tabular}{ll}
-\textsl{title:}    & A title \\
-\end{tabular}
-\bigskip
+Stuff here about stuff.
 
-Stuff here.
+Goal: automatically find all the sources in a series of astronomical images, in
+a way that's robust and fast per image, and which gets better the more images you process.
+
+\section{the way we approach source-finding}
+
+Generative model of the sky:
+One can derive a score for
+how well these locations match regions of ``non-background'' pixel
+intensities (and potentially other features), and treat source-finding
+as an exercise in optimizing those parameters.
+
+For $k$ categories (bins) we will have a $k$-elt vector $\bn$ of
+``counts'', for each class.  
+
 
 \end{document}
