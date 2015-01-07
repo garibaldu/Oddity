@@ -1,5 +1,6 @@
 import numpy as np
 import numpy.random as rng
+import copy
 
 class Squares:
   # Image dimensions
@@ -12,7 +13,7 @@ class Squares:
   scale = np.sqrt(x_range*y_range)
 
   # Maximum number of squares
-  N_max = 1000
+  N_max = 10
 
   def __init__(self):
     """
@@ -23,6 +24,20 @@ class Squares:
     self.widths = np.empty(Squares.N_max)
     self.N = 0
 
+  def num_collisions(self, xc, yc, width):
+    """
+    Count collisions between existing squares and the one provided
+    """
+    if self.N == 0:
+      return 0
+
+    diffx = np.abs(xc - self.xc[0:(self.N)])
+    diffy = np.abs(yc - self.yc[0:(self.N)])
+    collision = np.logical_and(\
+      diffx < width + self.widths[0:(self.N)], \
+      diffy < width + self.widths[0:(self.N)])
+    return np.sum(collision)
+
   def add(self):
     """
     Add a square to the model
@@ -31,18 +46,18 @@ class Squares:
     if self.N == Squares.N_max:
       return 0
 
-    self.xc[self.N] = Squares.x_min + Squares.x_range*rng.rand()
-    self.yc[self.N] = Squares.y_min + Squares.y_range*rng.rand()
-    self.widths[self.N] = 1E-2*Squares.scale
+    xc = Squares.x_min + Squares.x_range*rng.rand()
+    yc = Squares.y_min + Squares.y_range*rng.rand()
+    width = 0.03*Squares.scale
 
-    diffx = self.xc[self.N] - self.xc[0:self.N]
-    diffy = self.yc[self.N] - self.yc[0:self.N]
-    collision = np.logical_and(\
-      diffx < self.widths[self.N] + self.widths[0:self.N], \
-      diffy < self.widths[self.N] + self.widths[0:self.N])
+    if self.num_collisions(xc, yc, width) == 0:
+      self.xc[self.N] = xc
+      self.yc[self.N] = yc
+      self.widths[self.N] = width
+      self.N += 1
 
-    self.N += 1
-    return np.sum(collision)
+    return
+
 
   def remove(self):
     """
@@ -62,10 +77,12 @@ class Squares:
       self.add()
     else:
       self.remove()
+    return
+
 
 if __name__ == '__main__':
   from pylab import *
-  from copy import deepcopy
+  import copy
 
   x = linspace(-1., 1., 1001)
   y = x.copy()
@@ -80,7 +97,13 @@ if __name__ == '__main__':
 
   for i in xrange(0, 1000):
     plot([])
+
+    # Update
     s.proposal()
+
+    if np.mod(i, 10) == 0:
+      print(s.N)
+
 
     # Circle radii and positions
     width = s.widths[0:s.N]
