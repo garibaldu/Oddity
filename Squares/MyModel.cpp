@@ -7,7 +7,7 @@ using namespace std;
 using namespace DNest3;
 
 MyModel::MyModel()
-:objects(3, 100, false, MyDistribution(-1., 1., -1., 1.))
+:objects(3, 1000, false, MyDistribution(-1., 1., -1., 1.))
 {
 
 }
@@ -15,29 +15,44 @@ MyModel::MyModel()
 void MyModel::fromPrior()
 {
 	objects.fromPrior();
+	calculate_overlap();
 }
 
 double MyModel::perturb()
 {
 	double logH = 0.;
 
+	int old_overlap = overlap;
+
 	logH += objects.perturb();
+	calculate_overlap();
+
+	if(overlap > old_overlap)
+		logH = -1E200;
+
+	return logH;
+}
+
+void MyModel::calculate_overlap()
+{
+	overlap = 0;
 
 	const vector< vector<double> > components = objects.get_components();
-	double rsq;
+	vector<double> widths(components.size());
+	for(size_t i=0; i<components.size(); i++)
+		widths[i] = exp(components[i][0]);
+
+	double diffx, diffy;
 	for(size_t i=0; i<components.size(); i++)
 	{
 		for(size_t j=(i+1); j<components.size(); j++)
 		{
-			rsq = pow(components[i][1] - components[j][1], 2)
-				+ pow(components[i][2] - components[j][2], 2);
-			if(rsq < pow(exp(components[i][0]) + exp(components[j][0]), 2))
-				return -1E250;
+			diffx = fabs(components[i][1] - components[j][1]);
+			diffy = fabs(components[i][2] - components[j][2]);
+			if(diffx < (widths[i] + widths[j]) && (diffy < (widths[i] + widths[j])))
+				overlap++;
 		}
-	}		
-
-
-	return logH;
+	}
 }
 
 double MyModel::logLikelihood() const

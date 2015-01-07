@@ -15,9 +15,9 @@ for i in xrange(0, sample.shape[0]):
   plot([])  
 
   # Circle radii and positions
-  width = sample[i, 5:105]
-  xc = sample[i, 105:205]
-  yc = sample[i, 205:305]
+  width = sample[i, 5:1005]
+  xc = sample[i, 1005:2005]
+  yc = sample[i, 2005:3005]
 
   # Truncate
   xc = xc[0:sample[i, 4]]
@@ -25,8 +25,9 @@ for i in xrange(0, sample.shape[0]):
   width = exp(width[0:sample[i, 4]])
 
   for j in xrange(0, xc.shape[0]):
-    gca().add_artist(Circle((xc[j], yc[j]), width[j], alpha=0.1))
+    gca().add_artist(Rectangle((xc[j] - width[j], yc[j] - width[j]), 2*width[j], 2*width[j], alpha=0.1))
   axis([-1, 1, -1, 1])
+  title(i+1)
   draw()
 
 ioff()

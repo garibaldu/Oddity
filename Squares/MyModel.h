@@ -11,6 +11,9 @@ class MyModel:public DNest3::Model
 	private:
 		RJObject<MyDistribution> objects;
 
+		int overlap;
+		void calculate_overlap();
+
 	public:
 		MyModel();
 
