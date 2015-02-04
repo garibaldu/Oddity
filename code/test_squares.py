@@ -1,0 +1,78 @@
+import pylab as plt
+import numpy as np
+import numpy.random as rng
+from astropy.io import fits
+from squares import *
+
+
+# make real data
+filename = '../data/frame-r-000094-1-0131.fits.gz'
+hdulist = fits.open(filename)
+realimg = hdulist[0].data
+hdulist.close()
+print('Done reading in %s' % filename)
+
+# make fake data
+fakeimg = rng.normal(size=realimg.shape)
+ny, nx = fakeimg.shape
+ygrid, xgrid = np.mgrid[:ny, :nx]
+fakeimg += 0.0 * xgrid / nx  # to add a tiny gradient as a test
+startrow, startcol = 150, 350
+halfrow, halfcol = np.array(fakeimg.shape)/2 + [200, 250]
+
+tmpBBs = []
+fakeimg[startrow:startrow+100,startcol:startcol+100] += 0.5 # a patch of slightly brighter pixels.
+tmpBBs.append( OddityBB([startrow,startcol], 100) )  
+
+fakeimg[halfrow:halfrow+200,halfcol:halfcol+200] *= 1.3 # a patch of slightly more variable pixels.
+tmpBBs.append( OddityBB([halfrow,halfcol], 200) )  
+
+fakeimg[startrow:startrow+250,halfcol:halfcol+250] -= 0.3 # a patch of slightly darker pixels.
+tmpBBs.append( OddityBB([startrow,halfcol], 250) )  
+print('Done inventing fake data')
+
+img = fakeimg # we decide which data we're working with.
+plt.gray()
+#show_data_and_model(img, 'truth', tmpBBs)
+
+# ------------------------------------------------------------------
+
+M = 16 # number of histogram bins
+
+
+cbb = intensity_to_cumulated_block(img, M)
+
+# initialising MCMC with some BBs
+halfrow, halfcol = np.array(img.shape)/2
+BBs = []
+initsize = min(halfrow,halfcol) # deliberately so the BBs are huge but each enclose one true source.
+BBs.append( OddityBB([0,0], initsize) )  
+BBs.append( OddityBB([0,initsize], initsize) )  
+BBs.append( OddityBB([initsize,0], initsize) )  
+BBs.append( OddityBB([initsize,initsize], initsize) )  
+
+#show_data_and_model(intensity_to_boolean_block(img, M)[-1], 'raw_top_bin')
+show_data_and_model(img, 'start', BBs)
+
+alphas_S = np.ones(M, dtype=int) 
+alphas_B = 2 * alphas_S
+
+
+indices = range(len(BBs))
+logP = MH_step(cbb, 0, BBs, alphas_S, alphas_B)
+T = 0
+for t in range(7):
+    T_inner = 2 ** (2*t)
+    for tt in range(T_inner):
+        for i in indices:
+            logP = MH_step(cbb, i, BBs, alphas_S, alphas_B, temperature=1., logP=logP)
+    T += T_inner
+    print '%5d' % (T), 
+    for i in indices:
+        print BBs[i],
+    print '%.1f' % (logP)
+
+show_data_and_model(img, 'end', BBs)
+
+top_bin_img = intensity_to_boolean_block(img, M)[-1]
+show_data_and_model(top_bin_img, 'top_bin', BBs)
