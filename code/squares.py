@@ -78,7 +78,23 @@ class OddityBB:
                 - self._get_cumulated_block_elt(corners[3], cumulated_block))
 
 
+    def get_improvement(self, cbb, otherBBs, remaining_BG_counts, logP_BG, alphas_S, alphas_B):
+        """Find the change to the log posterior prob of the model that would
+        result from including this BB in with the otherBBs.  
 
+        NB: It doesn't actually need the full list of BBs, but good to
+        pass it in to avoid overlapping any of the existing BBs.
+        
+        otherBBs is a list of OddityBBs.
+
+        remaining_BG_counts is the histogram of counts for the whole
+        image minus those of all the existing BBs in otherBBs.
+
+        logP_BG is the contribution of the remaining_BG_counts to the
+        overall log Posterior probability.
+        """
+
+        
 def intensity_to_m(img, M):
     ny, nx = img.shape
     N = ny*nx
@@ -173,8 +189,8 @@ def get_logPosterior(cbb, BBs, alphas_S, alphas_B):
 
 def MH_step(cbb, i, BBs, alphas_S, alphas_B, temperature = 1., logP = None):
     """
-    Metropolis Hastings move on BBs[i]; return the next
-    Also change BBs in place, so FUCKING BE CAREFUL.
+    Metropolis Hastings move on BBs[i]; return the next.
+    Also changes BBs in place, so FUCKING BE CAREFUL.
     """
     if logP == None:
         logP = get_logPosterior(cbb, BBs, alphas_S, alphas_B)
@@ -185,7 +201,7 @@ def MH_step(cbb, i, BBs, alphas_S, alphas_B, temperature = 1., logP = None):
     new_pos = pos + jump_size * rng.randint(-1,2,size=2) 
     # but new_pos should stay in bounds 
     new_pos = np.maximum(np.minimum(new_pos, cbb[0].shape), [0,0]) 
-    new_width =  min(max(width + jump_size * rng.randint(-1,2),1),min(cbb[0].shape)) # keep positive, girls
+    new_width =  min(max(width + jump_size * rng.randint(-1,2),1),min(cbb[0].shape)) # keep positive
     BBs[i].set_pos(new_pos)
     BBs[i].set_width(new_width)
     new_logP = get_logPosterior(cbb, BBs, alphas_S, alphas_B)
