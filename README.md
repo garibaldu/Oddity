@@ -4,9 +4,9 @@ Finding crazy things in images since 2015.
 
 ## Authors
 
-- Brendon J. Brewer (Auckland)
 - Marcus Frean (Victoria)
 - David W. Hogg (NYU)
+- Brendon J. Brewer (Auckland)
 
 ## License
 
