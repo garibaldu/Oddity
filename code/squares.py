@@ -5,6 +5,7 @@ from astropy.io import fits
 
 
 def show_data_and_model(BG_image, title='dunno', BoundingBoxes = []):
+    plt.gray()
     plt.clf()
     plt.imshow(BG_image, interpolation='nearest', origin='lower')
     for BB in BoundingBoxes:
@@ -116,8 +117,8 @@ def intensity_to_boolean_block(img, M):
 def get_logL_patch(counts, alphas):
     """
     Takes a vector of counts (across bins), and vector of alpha hyperparameters (ditto).
-    Returns the log likelihood of those counts under the Dirichlet-multinomial distribution with
-    those hyperparameters.
+    Returns the log likelihood of those counts under the Dirichlet-multinomial 
+    distribution with those hyperparameters.
     """
     # initialize internal (static) variables
     try:
@@ -132,11 +133,10 @@ def get_logL_patch(counts, alphas):
         get_logL_patch.Cmax = 2 * (N + A)
         get_logL_patch.gammaln = np.append(np.array([np.Inf, 0.]), np.cumsum(np.log(np.arange(get_logL_patch.Cmax - 2) + 1)))
     # now the actual LF
-    return (  get_logL_patch.gammaln[A] 
-            - get_logL_patch.gammaln[N + A] 
+    logL = (get_logL_patch.gammaln[A]  - get_logL_patch.gammaln[N + A] 
             + np.sum(get_logL_patch.gammaln[counts + alphas]) 
-            - np.sum(get_logL_patch.gammaln[alphas]) 
-            )
+            - np.sum(get_logL_patch.gammaln[alphas]))
+    return (  logL )
 
 
 def intensity_to_cumulated_block(img, M):

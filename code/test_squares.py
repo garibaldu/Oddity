@@ -11,6 +11,8 @@ hdulist = fits.open(filename)
 realimg = hdulist[0].data
 hdulist.close()
 print('Done reading in %s' % filename)
+realimg += 0.01* rng.normal(size=realimg.shape)
+
 
 # make fake data
 fakeimg = rng.normal(size=realimg.shape)
@@ -21,23 +23,30 @@ startrow, startcol = 150, 350
 halfrow, halfcol = np.array(fakeimg.shape)/2 + [200, 250]
 
 tmpBBs = []
-fakeimg[startrow:startrow+100,startcol:startcol+100] += 0.5 # a patch of slightly brighter pixels.
-tmpBBs.append( OddityBB([startrow,startcol], 100) )  
+true_size = 100
+fakeimg[startrow:startrow+100,startcol:startcol+true_size] += 0.2 # a patch of slightly brighter pixels.
+tmpBBs.append( OddityBB([startrow,startcol], true_size) )  
 
-fakeimg[halfrow:halfrow+200,halfcol:halfcol+200] *= 1.3 # a patch of slightly more variable pixels.
-tmpBBs.append( OddityBB([halfrow,halfcol], 200) )  
+true_size = 200
+fakeimg[halfrow:halfrow+true_size,startcol:startcol+true_size] *= 1.2 # a patch of slightly MORE variable pixels.
+tmpBBs.append( OddityBB([halfrow,startcol], true_size) )  
 
-fakeimg[startrow:startrow+250,halfcol:halfcol+250] -= 0.3 # a patch of slightly darker pixels.
-tmpBBs.append( OddityBB([startrow,halfcol], 250) )  
+true_size = 200
+fakeimg[halfrow:halfrow+true_size,halfcol:halfcol+true_size] *= 0.7 # a patch of slightly less variable pixels.
+tmpBBs.append( OddityBB([halfrow,halfcol], true_size) )  
+
+true_size = 250
+fakeimg[startrow:startrow+true_size,halfcol:halfcol+true_size] -= 0.2 # a patch of slightly darker pixels.
+tmpBBs.append( OddityBB([startrow,halfcol], true_size) )  
+
+show_data_and_model(fakeimg, 'truth', tmpBBs)
 print('Done inventing fake data')
 
 img = fakeimg # we decide which data we're working with.
-plt.gray()
-#show_data_and_model(img, 'truth', tmpBBs)
 
 # ------------------------------------------------------------------
 
-M = 16 # number of histogram bins
+M = 32 # number of histogram bins
 
 
 cbb = intensity_to_cumulated_block(img, M)
@@ -55,7 +64,7 @@ BBs.append( OddityBB([initsize,initsize], initsize) )
 show_data_and_model(img, 'start', BBs)
 
 alphas_S = np.ones(M, dtype=int) 
-alphas_B = 2 * alphas_S
+alphas_B = 1 * alphas_S
 
 
 indices = range(len(BBs))
@@ -76,3 +85,37 @@ show_data_and_model(img, 'end', BBs)
 
 top_bin_img = intensity_to_boolean_block(img, M)[-1]
 show_data_and_model(top_bin_img, 'top_bin', BBs)
+
+# show the histograms of each BB, and the one for the background
+
+
+
+plt.clf()
+sources_counts = 0
+max_c = 0
+for i, BB in enumerate(BBs):
+    this_counts = BB.get_counts(cbb)
+    this_logL_contribution = get_logL_patch(this_counts, alphas_S)
+    sources_counts += this_counts
+    max_c = max(max_c,  np.max(this_counts))
+    plt.subplot(1, len(BBs)+1, i+1)
+    plt.plot(this_counts, 'ok', this_counts, '-k')
+    plt.gca().set_ylim([0,50000])
+    if i>0: plt.gca().set_yticks([])
+
+for i, BB in enumerate(BBs):
+    plt.subplot(1, len(BBs)+1, i+1)
+    plt.gca().set_ylim([0,1.1*max_c])
+    plt.title('source %i' %(i) )
+
+background_counts = cbb[:, -1, -1].ravel() - sources_counts
+BG_logL_contribution = get_logL_patch(background_counts, alphas_B)
+plt.subplot(1, len(BBs)+1, len(BBs)+1)
+plt.plot(background_counts, 'or', background_counts, '-r')
+plt.gca().set_ylim([0,np.max(background_counts)])
+plt.title('background')
+plt.savefig('histograms.png',dpi=150)
+
+plt.clf()
+plt.hist(np.ravel(img))
+plt.show()
