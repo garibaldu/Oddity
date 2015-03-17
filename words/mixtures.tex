@@ -1,0 +1,99 @@
+% This document is part of the Oddity project.
+% Copyright 2015 the Authors.
+
+% ## to-do
+% - write
+
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\newcommand{\given}{\,|\,}
+
+\title{notes on mixtures}
+\author{marcus frean}
+\date{}
+\begin{document}\sloppy\sloppypar
+\maketitle
+
+Consider a square (Oddity bounding box) in an image, containing $N$
+pixels whose bin indices are collected in a vector $\mathbf{n}$.
+
+\section{mixtures of multinomials}
+
+\subsection{single multinomial}
+Suppose we choose\footnote{with replacement} from an urn containing
+coloured balls (``colours'' correspond to bin indices). The densities
+of different colours are given by a known categorical distribution
+$\mathbf{P}$, and after $N$ such draws we observe the numbers of each
+colour drawn.
+
+The likelihood would be given by the multinomial distribution:
+\begin{align}
+\mathcal{L}(\mathbf{n} \given \mathbf{P}) &= {N \choose \mathbf{n}} \prod_i P_i^{n_i}
+\end{align}
+where ${N \choose \mathbf{n}} = \frac{N!}{\prod_i n_i !}$ is called the multinomial coefficient.
+
+
+\subsection{two multinomials}
+Now suppose instead that there are two urns, $s$ and $b$, and that we
+draw from $\mathbf{P}_s$ with probability $\lambda$ and from
+$\mathbf{P}_b$ with probability $1-\lambda$. The distribution
+specified by this model is
+ 
+\begin{align}
+\mathcal{L}(\mathbf{n} \given \mathbf{P}_s, \mathbf{P}_b, \lambda) 
+&= {N \choose \mathbf{n}} \prod_i (\lambda P_{s,i} + (1-\lambda) P_{b,i})^{n_i}
+\end{align}
+
+which is also a multinomial distribution, but with parameter vector $\lambda \mathbf{P}_{s} + (1-\lambda) \mathbf{P}_{b}$ in place  of $\mathbf{P}$.
+
+See: Jason Rennie, Mixtures of Multinomials, 2005, {\tt ``mixture.Multinomials.pdf'' }
+
+
+\section{mixtures of Dirichlet-multinomials}
+
+\subsection{single Dirichlet-multinomial}
+
+Now consider having ignorance as to the categorical distribution used, but suppose it comes from a Dirichlet itself.
+
+That is: 
+\begin{itemize}
+\item
+{\tt one time only}, we draw a categorical distribution $\mathbf{P}$
+from a Dirichlet having parameters $\boldsymbol\alpha$.
+
+\item 
+Then, {\tt $N$ times}, we draw coloured balls from $\mathbf{P}$.
+\end{itemize}
+
+Theory tells us that, after integrating out the unknown $\mathbf{P}$,
+this generative model produces final counts $\mathbf{n}$ with  a probability
+that is given by the ``Dirichlet-multinomial distribution'',
+\begin{align}
+\mathcal{L}(\mathbf{n} \given \boldsymbol\alpha, N) &= \frac{\Gamma(A)}{\Gamma(N+A)} \prod_i \frac{\Gamma(n_i + \alpha_i)}{\Gamma(\alpha_i)}
+\end{align}
+where $A = \sum_i \alpha_i$.
+
+This is the basis for our current scores for a region (both the score
+that is a Bayes Factor, and an alternative score that compares a
+likelihood with/without the region being ``sourcy'').
+
+\subsection{two Dirichlet-multinomials}
+
+Now try this generative model for size, which uses two Dirichlets, having parameters $\boldsymbol\alpha_s$ and $\boldsymbol\alpha_b$ respectively.
+
+\begin{itemize}
+\item
+{\tt one time only}, we draw a categorical distribution $\mathbf{P}_s$
+from a Dirichlet having parameters $\boldsymbol\alpha_s$ AND similarly
+one $\mathbf{P}_b$ from a Dirichlet having parameters
+$\boldsymbol\alpha_b$.
+
+\item
+Then, {\tt $N$ times}, 
+we draw from $\mathbf{P}_s$ with probability $\lambda$ and from $\mathbf{P}_b$ with probability $1-\lambda$. 
+\end{itemize}
+
+Theory tells us that, after integrating out the unknown $\mathbf{P}$,........... wot?
+
+
+\end{document}
