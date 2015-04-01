@@ -43,6 +43,7 @@ show_data_and_model(fakeimg, 'truth', tmpBBs)
 print('Done inventing fake data')
 
 img = fakeimg # we decide which data we're working with.
+show_data_and_model(img, 'raw')
 
 # ------------------------------------------------------------------
 
