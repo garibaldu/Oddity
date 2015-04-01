@@ -11,8 +11,10 @@ def show_data_and_model(BG_image, title='dunno', BoundingBoxes = []):
     for BB in BoundingBoxes:
         plt.gca().add_artist(plt.Rectangle((BB.get_pos()[1], BB.get_pos()[0]), BB.get_width(), BB.get_width(), alpha=0.9, facecolor='None', edgecolor='blue'))
     plt.title(title)
+    plt.axis('off')
     plt.savefig(title+'.png',dpi=150)
     print('Done writing %s' % (title+'.png'))
+
 
 class OddityBB:
     def __init__(self, pos, width):
