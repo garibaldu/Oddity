@@ -47,7 +47,7 @@ show_data_and_model(img, 'raw')
 
 # ------------------------------------------------------------------
 
-M = 32 # number of histogram bins
+M = 16 # number of histogram bins
 
 
 cbb = intensity_to_cumulated_block(img, M)
@@ -64,20 +64,21 @@ BBs.append( OddityBB([initsize,initsize], initsize) )
 #show_data_and_model(intensity_to_boolean_block(img, M)[-1], 'raw_top_bin')
 show_data_and_model(img, 'start', BBs)
 
-alphas_S = np.ones(M, dtype=int) 
-alphas_B = 1 * alphas_S
+alphas_S = np.ones(M, dtype=int) # totally agnostic source distribution
+alphas_B = 10 * alphas_S
 
 
 indices = range(len(BBs))
 logP = MH_step(cbb, 0, BBs, alphas_S, alphas_B)
-T = 0
-for t in range(7):
-    T_inner = 2 ** (2*t)
-    for tt in range(T_inner):
+nSteps = 0
+nSteps_inner = 1
+while (nSteps < 1000):  
+    nSteps_inner = 2 * nSteps_inner # I'm reporting at each doubling of nSteps.
+    for tt in range(nSteps_inner):
         for i in indices:
             logP = MH_step(cbb, i, BBs, alphas_S, alphas_B, temperature=1., logP=logP)
-    T += T_inner
-    print '%5d' % (T), 
+    nSteps += nSteps_inner
+    print 'Iteration %5d: ' % (nSteps), 
     for i in indices:
         print BBs[i],
     print '%.1f' % (logP)
@@ -117,6 +118,3 @@ plt.gca().set_ylim([0,np.max(background_counts)])
 plt.title('background')
 plt.savefig('histograms.png',dpi=150)
 
-plt.clf()
-plt.hist(np.ravel(img))
-plt.show()
