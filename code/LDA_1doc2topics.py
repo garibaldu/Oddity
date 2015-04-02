@@ -8,6 +8,7 @@ Testing my idea of variational EM on LDA with ONE document, 2 topics!
 
 import numpy as np
 import numpy.random as rng
+from scipy.special import psi as digamma
 
 K = 4 #number of bins
 n = np.array([10, 10, 50, 50])  # the counts
@@ -21,20 +22,25 @@ pi = pi / np.sum(pi)  # normalise it
 
 B = np.ones((2,K), dtype=float)
 B =  1. / B.sum(1).reshape(2,1) * B   # ugly, but now normalised along the rows
-#print pi
-#print B
+print 'pi: ', pi
+print B
 
 for t in range(5):
-    print pi
-    print B
-    print '\n'
+    di = digamma(pi[0])-digamma(pi[1])
+    di_array = -1. * np.array([di, -di]).reshape((2,1))
+    C = n * B * np.exp(di_array)
+    print 'C :'
+    print C
+
     # E step
-    pi = alpha + (np.transpose(pi) * np.dot(B, n)).reshape(alpha.shape)
+    pi = alpha + C.sum(1).reshape((2,1))
     pi = pi / np.sum(pi)  # normalise it
-    #print pi
+    print 'pi: ', pi
     
     # M step
-    B = gamma + n.reshape(1, K) * B * pi
+    B = gamma + C.sum(0).reshape((1,K))
     B =  1. / B.sum(1).reshape(2,1) * B   # ugly, but now normalised along the rows
+    print 'B :'
+    print B
 
     
