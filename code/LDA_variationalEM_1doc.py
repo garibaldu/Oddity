@@ -28,28 +28,29 @@ cTilde = np.ones((K,V), dtype=float)
 # SOME MADE-UP DATA........................
 # EG: 50 pixels from background, and another 150 from [.5, .5, 0, 0]
 # So mixing proportion is about 1/4 background.
-n = np.array([205, 200, 50, 50]).reshape((1,V))  # the data as "word" counts
+base = 100
+n = np.array([1005+base, 1000+base, base, base]).reshape((1,V))  # the data as "word" counts
 
 # Run variational EM algorithm to find the best-guess alphaTildes.
-for t in range(5):
+for t in range(100):
     # E step: update cTilde (normalised) and alphaTilde
-    for tt in range(1):
+    for tt in range(200):
         theFactor = np.exp(digammaFn(alphaTilde) - digammaFn(alphaTilde.sum()))
         cTilde = B * theFactor
-        cTilde = cTilde / cTilde.sum(1).reshape(K,1)   # normalised along the rows
-        alphaTilde = alpha + (n * cTilde).sum(1).reshape(K,1)
-        print 'theFactor.shape is ',theFactor.shape,' but therefore is having NO effect!!'
-        print 'so..... I have some dimensionality problem to understand here'
+        
+        #cTilde = cTilde / cTilde.sum(1).reshape(K,1)   # normalised along the rows
+        #alphaTilde = alpha + (n * cTilde).sum(1).reshape(K,1)
+        cTilde = cTilde / cTilde.sum(0).reshape(1,V)   # normalised along the cols
+        alphaTilde = alpha + (cTilde * n).sum(1).reshape(K,1)
     
     # M step: update beta (normalised)
     B = beta + (n * cTilde)
     B =  B / B.sum(1).reshape(K,1)   # normalised along the rows
 
-print 'cTilde: '
-print cTilde
-print 'alphaTilde:'
-print alphaTilde
+#print 'cTilde: '
+#print cTilde
 print 'most likely proportion of Background: ', alphaTilde[0]/alphaTilde.sum()
+print 'confidence (sum of Dir params): ', alphaTilde.sum()
 print 'B :'
 print B
 
