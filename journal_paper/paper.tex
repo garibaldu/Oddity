@@ -44,6 +44,7 @@
 \newcommand{\myemail}{skywalker@galaxy.far.far.away}
 
 \newcommand{\TODO}[1]{\textbf{TODO #1}}
+\newcommand{\para}[1]{{\sc{#1}\\}}
 
 %% You can insert a short comment on the title page using the command below.
 
@@ -149,7 +150,29 @@
 
 \section{Introduction}
 
-TODO INTRODUCTION GOES HERE.
+\subsection{Approaches to detecting extended dim sources}
+\para{auto detection is important}
+Automated source detection is an important task. 
+(a) humans cannot keep up [scale of big new telescopes] (b) humans cannot see [sources can be hard to spot]
+
+\para{compact and bright inspires current algs}
+Source detection is easiest in the case of point sources, and more generally in the case where the sources are compact and bright. In an $N=n \times n$-pixel image containing one such source (for simplicity), there are essentially $N$ 
+``hypotheses'' (locations) to search over (not quite so but...).
+It is easy and fast to identify those points in the image that are brightest - an operation that scales as only $O(N)$.
+This fact inspires the default algorithm, which is intuitively sensible:
+(i) find all the brightest pixels in an image, (ii) expand around each, merging as necessary. 
+
+\para{examples} SExtractor, etc. The two steps for each... Nb. Aggregation is for the purpose of removing false positives.]
+
+The general strategy being employed in all these cases is ``locate first, then aggregate''.
+
+\para{our approach is different}
+Extended dim sources pose a difficult problem, and suggest a different strategy. Even if the algorithm is only required to find ``postage stamps'' (rectangular regions containing sources), in an $N=n \times n$-pixel image containing one such source there are now $N^2$ hypotheses to consider.
+
+Strategies specifically directed at finding dim extended sources need
+to aggregate first, not second. How can this be achieved at scale?
+
+\subsection{Oddity}
 
 \section{Experiments}
 
